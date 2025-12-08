@@ -50,4 +50,5 @@ testem.log
 Thumbs.db
 .vercel
 
-commands.txt
+.commands.txt
+.env
