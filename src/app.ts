@@ -3,8 +3,8 @@ import config from "./config";
 import initDB from "./config/db";
 import logger from "./middleware/logger";
 import { userRoutes } from "./modules/user/user.routes";
-import { todoRoutes } from "./modules/todo/todo.routes";
 import { authRoutes } from "./modules/auth/auth.routes";
+import { vehicleRoutes } from "./modules/vehicle/vehicle.routes";
 
 const app = express();
 // parser
@@ -22,8 +22,7 @@ initDB();
 //users CRUD
 app.use("/api/v1/users", userRoutes);
 
-//todos CRUD
-app.use("/todos", todoRoutes);
+app.use("/api/v1/vehicles", vehicleRoutes);
 
 //auth routes
 app.use("/api/v1/auth", authRoutes);

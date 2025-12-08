@@ -32,6 +32,9 @@ const auth = (...roles: string[]) => {
 
       req.user = decoded;
 
+      console.error(decoded, 'decoded');
+      
+
       //["admin"]
       if (roles.length > 0 && !roles.includes(decoded.role as string)) {
         return res.status(403).json({
