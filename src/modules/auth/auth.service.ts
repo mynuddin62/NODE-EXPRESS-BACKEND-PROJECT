@@ -40,6 +40,22 @@ const loginUser = async (email: string, password: string) => {
 const signupUser = async (payload: Record<string, string>) => {
   const {name,  email, password, phone, role} = payload;
   
+  if (!name || typeof name !== 'string') {
+    throw new CustomError("Name is required", 400, 'INVALID_NAME');
+  }
+
+  if (!phone) {
+    throw new CustomError("Phone is required", 400, 'INVALID_PHONE');
+  }
+
+  if (!role || typeof role !== 'string') {
+    throw new CustomError("Role is required", 400, 'INVALID_ROLE');
+  }
+
+  if (!['admin', 'customer'].includes(role)) {
+    throw new CustomError("Role is out of scope", 400, 'INVALID_ROLE');
+  }
+  
   if (!email || typeof email !== 'string' || hasUpperCase(email)) {
     throw new CustomError("Email should be in lower case", 400, 'INVALID_EMAIL');
   }
@@ -56,7 +72,8 @@ const signupUser = async (payload: Record<string, string>) => {
   );
 
   result.rows[0].password = undefined;
-
+  result.rows[0].created_at = undefined;
+  result.rows[0].updated_at = undefined;
   return result;
 };
 

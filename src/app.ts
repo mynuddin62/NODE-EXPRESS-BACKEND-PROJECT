@@ -20,7 +20,7 @@ initDB();
 // });
 
 //users CRUD
-app.use("/users", userRoutes);
+app.use("/api/v1/users", userRoutes);
 
 //todos CRUD
 app.use("/todos", todoRoutes);
