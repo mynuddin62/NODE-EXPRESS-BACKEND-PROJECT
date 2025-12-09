@@ -1,49 +1,64 @@
 import { pool } from "../../config/db";
 import CustomError from "../../error/customError";
+import { vehicleServices } from "../vehicle/vehicle.service";
 
 
 
-const createBooking = async (payload: Record<string, unknown>) => {
-  const {vehicle_name,  type, registration_number, daily_rent_price, availability_status} = payload;
-  
-  if (!vehicle_name || typeof vehicle_name !== 'string') {
-    throw new CustomError("vehicle_name is required", 400, 'Invalid_vehicle_name');
-  }
+const createBooking = async (payload: Record<string, string>, user: any) => {
+  const {customer_id,  vehicle_id, rent_start_date, rent_end_date} = payload;
 
-  if (!registration_number) {
-    throw new CustomError("registration_number is required", 400, 'invalid_registration_number');
-  }
-
-  if (!type || typeof type !== 'string') {
-    throw new CustomError("type is required", 400, 'invalid_type');
-  }
-
-  if (!['car', 'bike', 'van', 'SUV'].includes(type)) {
-    throw new CustomError("type is out of scope", 400, 'invalid_type');
+  if(user.id! !== customer_id && user.role! === 'customer'){
+    throw new CustomError("customer can not create others booking", 400, 'Invalid_customer_id');
   }
   
-  if (!daily_rent_price || typeof daily_rent_price !== 'number' || daily_rent_price > 0) {
-    throw new CustomError("daily_rent_price is not positive", 400, 'invalid_daily_rent_price');
+
+  if (!rent_start_date || typeof rent_start_date !== 'string') {
+    throw new CustomError("rent_start_date is required", 400, 'Invalid_rent_start_date');
   }
 
-   if (!availability_status || typeof availability_status !== 'string') {
-    throw new CustomError("availability_status is required", 400, 'invalid_availability_status');
+  if (!rent_end_date || typeof rent_end_date !== 'string') {
+    throw new CustomError("rent_end_date is required", 400, 'Invalid_rent_end_date');
   }
 
-  if (!['available', 'booked'].includes(availability_status)) {
-    throw new CustomError("invalid_availability_status is out of scope", 400, 'invalid_availability_status');
+  const startDate = new Date(rent_start_date);
+  const endDate = new Date(rent_end_date);
+
+  if (isNaN(startDate.getTime())) {
+    throw new CustomError("Invalid rent_start_date", 400, "Invalid_rent_start_date");
   }
 
-  const result = await pool.query(
-    `INSERT INTO vehicles(vehicle_name, type, registration_number, daily_rent_price, availability_status) VALUES($1, $2, $3, $4, $5) RETURNING *`,
-    [vehicle_name, type, registration_number, daily_rent_price, availability_status]
-  );
+  if (isNaN(endDate.getTime())) {
+    throw new CustomError("Invalid rent_end_date", 400, "Invalid_rent_end_date");
+  }
 
-  result.rows[0].created_at = undefined;
-  result.rows[0].updated_at = undefined;
-  return result;
+  if (endDate <= startDate) {
+    throw new CustomError(
+      "rent_end_date must be greater than rent_start_date",
+      400,
+      "end_date_must_be_greater"
+    );
+  }
+  
+  if(!vehicle_id) {
+    throw new CustomError("vehicle_id is required", 400, 'Invalid_vehicle_id');
+  }
+  const availableVehicle = await vehicleServices.getSingleAvailableVehicle(vehicle_id);
+
+  console.log(availableVehicle, 'hello');
+  
+
+  // const result = await pool.query(
+  //   `INSERT INTO vehicles(vehicle_name, type, registration_number, daily_rent_price, availability_status) VALUES($1, $2, $3, $4, $5) RETURNING *`,
+  //   [vehicle_name, type, registration_number, daily_rent_price, availability_status]
+  // );
+
+  // result.rows[0].created_at = undefined;
+  // result.rows[0].updated_at = undefined;
+  // return result;
+  return availableVehicle;
 };
 
 export const bookingServices = {
+  createBooking,
 
 };

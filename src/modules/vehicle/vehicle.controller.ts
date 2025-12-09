@@ -24,12 +24,21 @@ const createVehicle = async (req: Request, res: Response) => {
 const getVehicles = async (req: Request, res: Response) => {
   try {
     const vehicles = await vehicleServices.getVehicles();
+    console.log(vehicles);
     
-    res.status(200).json({
+    if(!vehicles.length) {
+      res.status(200).json({
+      success: true,
+      message: "No vehicles found",
+      data: vehicles,
+    }); 
+    }else {
+      res.status(200).json({
       success: true,
       message: "Vehicles retrieved successfully",
       data: vehicles,
     });
+    }
   } catch (err: any) {
     err.statusCode ??= 500;
     res.status(err.statusCode).json({
@@ -92,7 +101,6 @@ const deleteVehicle = async (req: Request, res: Response) => {
       res.status(200).json({
         success: true,
         message: "Vehicle deleted successfully",
-        data: result.rows,
       });
     }
   } catch (err: any) {

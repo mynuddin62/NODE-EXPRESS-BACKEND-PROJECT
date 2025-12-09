@@ -4,7 +4,17 @@ import { VehicleResponse } from "./vehicleResponse";
 
 const createVehicle = async (payload: Record<string, string>) => {
   const {vehicle_name,  type, registration_number, daily_rent_price, availability_status} = payload;
-  
+
+  if (!daily_rent_price) {
+    throw new CustomError("daily_rent_price is not positive", 400, 'invalid_daily_rent_price');
+  }
+
+  const price = Number(daily_rent_price)
+
+  if(Number.isNaN(price) || price <= 0){
+    throw new CustomError("daily_rent_price is not positive", 400, 'invalid_daily_rent_price');
+  }
+
   if (!vehicle_name || typeof vehicle_name !== 'string') {
     throw new CustomError("vehicle_name is required", 400, 'Invalid_vehicle_name');
   }
@@ -21,9 +31,7 @@ const createVehicle = async (payload: Record<string, string>) => {
     throw new CustomError("type is out of scope", 400, 'invalid_type');
   }
   
-  if (!daily_rent_price || typeof daily_rent_price !== 'number' || daily_rent_price > 0) {
-    throw new CustomError("daily_rent_price is not positive", 400, 'invalid_daily_rent_price');
-  }
+  
 
    if (!availability_status || typeof availability_status !== 'string') {
     throw new CustomError("availability_status is required", 400, 'invalid_availability_status');
@@ -130,11 +138,23 @@ const deleteVehicle = async (id: string) => {
 };
 
 
+const getSingleAvailableVehicle = async (id: string) => {
+  const result = await pool.query(`SELECT * FROM vehicles WHERE id = $1 AND availability_status = 'available'`, [id]);
+
+  if (!result.rowCount) {
+    throw new CustomError("Vehicle not found", 404, "NOT_FOUND");
+  }
+
+  return new VehicleResponse(result.rows[0]);
+};
+
+
 
 export const vehicleServices = {
   createVehicle,
   getVehicles,
   getSingleVehicle,
   updateVehicle,
-  deleteVehicle
+  deleteVehicle,
+  getSingleAvailableVehicle
 };
