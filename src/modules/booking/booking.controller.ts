@@ -8,7 +8,7 @@ const createBooking = async (req: Request, res: Response) => {
     const result = await bookingServices.createBooking(req.body, req.user!);
     res.status(201).json({
       success: true,
-      message: "Vehicle created successfully",
+      message: "Booking created successfully",
       data: /*result.rows[0]*/ result,
     });
   } catch (err: any) {
