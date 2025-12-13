@@ -16,6 +16,16 @@ const getSingleuser = async (id: string) => {
   return result;
 };
 
+
+const getSingleCustomerUser = async (id: string) => {
+  const result = await pool.query(`
+    SELECT * FROM users 
+    WHERE id = $1
+    AND role = 'customer'
+    `, [id]);
+  return result;
+};
+
 const updateUser = async (id: string, payload: Record<string, string>) => {
   
   const {name,  email, password, phone, role} = payload;
@@ -114,4 +124,6 @@ export const userServices = {
   getUser,
   updateUser,
   deleteUser,
+  getSingleCustomerUser,
+  getSingleuser,
 };
