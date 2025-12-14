@@ -6,7 +6,6 @@ const loginUser = async (req: Request, res: Response) => {
 
   try {
     const result = await authServices.loginUser(email, password);
-    // console.log(result.rows[0]);
     res.status(200).json({
       success: true,
       message: "Login successful",
@@ -32,7 +31,6 @@ const signupUser = async (req: Request, res: Response) => {
       data: result.rows[0],
     });
   } catch (err: any) {
-    console.log(err);
     err.statusCode ??= 500;
     res.status(err.statusCode).json({
       success: false,

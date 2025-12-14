@@ -17,7 +17,6 @@ const loginUser = async (email: string, password: string) => {
 
   const match = await bcrypt.compare(password, user.password);
 
-  console.log({ match, user });
   if (!match) {
      throw new CustomError("Email or Password is incorrect", 401, 'UNAUTHORIZED');
   }

@@ -12,7 +12,6 @@ const createBooking = async (req: Request, res: Response) => {
       data: result.rows[0] /*result*/,
     });
   } catch (err: any) {
-    console.log(err);
     err.statusCode ??= 500;
     res.status(err.statusCode).json({
       success: false,
