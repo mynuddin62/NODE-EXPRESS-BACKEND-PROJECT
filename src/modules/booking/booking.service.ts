@@ -115,21 +115,24 @@ const createBooking = async (payload: Record<string, string>, user: any) => {
 
 const getBookings = async (user: any, bookingId: number = 0 ) => {
   
+  const updateBookingAndVehicleSytemQuery = 
+  `WITH updated_bookings AS (
+   UPDATE bookings
+   SET status = 'returned'
+   WHERE rent_end_date < CURRENT_DATE
+   RETURNING vehicle_id
+   )
+   UPDATE vehicles
+   SET availability_status = 'available'
+   WHERE id IN (
+   SELECT DISTINCT vehicle_id
+   FROM updated_bookings
+   )`;
 
-  //we need first find distinct vehicle ids to make them available 
-  // we need to update for all 
+  const res = await pool.query(updateBookingAndVehicleSytemQuery);
+  console.log(res);
   
-  ` WITH updated AS (
-    UPDATE bookings
-    SET status = 'returned'
-    WHERE rent_end_date < CURRENT_DATE
-    RETURNING vehicle_id
-    )
-    SELECT DISTINCT vehicle_id
-    FROM updated`;
 
-    `update vehicles set availability_status = 'available'
-     where id in (:ids)`
 
   const id = user.role! === 'admin' ? 0 : user.id!
   
@@ -145,7 +148,7 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
     INNER JOIN vehicles v on v.id = b.vehicle_id 
     WHERE 
       CASE WHEN $1 = 0 THEN 1=1 ELSE u.id = $2 END
-      CASE WHEN $3 = 0 THEN 1=1 ELSE b.id = $4 END
+      AND CASE WHEN $3 = 0 THEN 1=1 ELSE b.id = $4 END
       ORDER BY b.id ASC`
       , 
       [id, id, bookingId, bookingId])
