@@ -11,7 +11,6 @@ const createVehicle = async (req: Request, res: Response) => {
       data: result.rows[0],
     });
   } catch (err: any) {
-    console.log(err);
     err.statusCode ??= 500;
     res.status(err.statusCode).json({
       success: false,
@@ -24,8 +23,7 @@ const createVehicle = async (req: Request, res: Response) => {
 const getVehicles = async (req: Request, res: Response) => {
   try {
     const vehicles = await vehicleServices.getVehicles();
-    console.log(vehicles);
-    
+ 
     if(!vehicles.length) {
       res.status(200).json({
       success: true,
