@@ -64,8 +64,14 @@ const signupUser = async (payload: Record<string, string>) => {
     throw new CustomError("Password should be minimum 6 characters", 400, 'INVALID_PASSWORD');
   }
 
-  const hashedPass = await bcrypt.hash(password as string, 10);
+  const emailQuery = `SELECT * FROM users where email = ${email}`
+  const emailResult = await pool.query(emailQuery)
+  
+  if(emailResult.rowCount && emailResult.rowCount > 0){
+    throw new CustomError("Email should be unique", 400, 'INVALID_EMAIL');
+  } 
 
+  const hashedPass = await bcrypt.hash(password as string, 10);
   const result = await pool.query(
     `INSERT INTO users(name, role, email, password, phone) VALUES($1, $2, $3, $4, $5) RETURNING *`,
     [name, role, email, hashedPass, phone]

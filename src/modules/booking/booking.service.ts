@@ -72,10 +72,7 @@ const createBooking = async (payload: Record<string, string>, user: any) => {
   }
 
   console.log(customer_id, vehicle_id, startDate, endDate, total_price);
-  
 
-
-  // now proceeding for insertion .. and update in vehicle ..
 
   const result = await pool.query(
     `INSERT INTO bookings(customer_id, vehicle_id, rent_start_date, rent_end_date, total_price, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING *`,

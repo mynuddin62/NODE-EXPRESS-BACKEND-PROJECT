@@ -21,6 +21,13 @@ const createVehicle = async (payload: Record<string, string>) => {
 
   if (!registration_number) {
     throw new CustomError("registration_number is required", 400, 'invalid_registration_number');
+  }else {
+    const registrationFinderQuery = `SELECT * FROM vehicles where registration_number = ${registration_number}`
+    const regResult = await pool.query(registrationFinderQuery)
+  
+    if(regResult.rowCount && regResult.rowCount > 0){
+      throw new CustomError("Registration number should be unique", 400, 'invalid_registration_number');
+    } 
   }
 
   if (!type || typeof type !== 'string') {
@@ -79,6 +86,14 @@ const updateVehicle  = async (id: string, payload: Record<string, string>) => {
   }
 
   if(registration_number && existingVehicle.registration_number !== registration_number) {
+    //checking for unique ...
+    const registrationFinderQuery = `SELECT * FROM vehicles where registration_number = ${registration_number}`
+    const regResult = await pool.query(registrationFinderQuery)
+  
+    if(regResult.rowCount && regResult.rowCount > 0){
+      throw new CustomError("Registration number should be unique", 400, 'invalid_registration_number');
+    } 
+    
     existingVehicle.registration_number = registration_number 
   }
 

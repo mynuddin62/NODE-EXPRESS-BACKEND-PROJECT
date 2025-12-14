@@ -26,20 +26,27 @@ const getSingleCustomerUser = async (id: string) => {
   return result;
 };
 
-const updateUser = async (id: string, payload: Record<string, string>) => {
+const updateUser = async (id: string, payload: Record<string, string>, user: any) => {
   
   const {name,  email, password, phone, role} = payload;
-  
-  const existingUserResult = await getSingleuser(id);
-  if (!existingUserResult.rowCount) {
-    throw new CustomError("User not found", 404, "USER_NOT_FOUND");
+
+  //customer check .. from token only updates his info only not the role ...
+  // email must be uniuqe ...
+
+  if(user.role !== 'admin' && user.id != id ) {
+     throw new CustomError(
+      "Access forbidden. Insufficient permissions.",
+      403,
+      "FORBIDDEN"
+    );
   }
 
-  const existingUser = existingUserResult.rows[0];
+  if (role &&  !['admin', 'customer'].includes(role)) {
+    throw new CustomError("Role is out of scope", 400, 'INVALID_ROLE');
+  }
 
-  const isAdmin = existingUser.role === "admin";
-
-  if (isAdmin && existingUser.id != id) {
+  //customer can not change role to admin ...
+  if(role && role === 'admin' && user.role !== 'admin') {
     throw new CustomError(
       "Access forbidden. Insufficient permissions.",
       403,
@@ -47,39 +54,29 @@ const updateUser = async (id: string, payload: Record<string, string>) => {
     );
   }
 
-  if(!isAdmin && role === 'admin'){
-     throw new CustomError(
-      "Access forbidden. Customer can not change role to admin",
-      403,
-      "FORBIDDEN"
-    );
+  const existingUserResult = await getSingleuser(id);
+  const existingUser = existingUserResult.rows[0];
+  if (!existingUserResult.rowCount) {
+    throw new CustomError("User not found", 404, "USER_NOT_FOUND");
   }
 
-  existingUser.role = role 
-
-
-  if (email && email !== existingUser.email) {
-    if (typeof email !== "string" || hasUpperCase(email)) {
-      throw new CustomError("Email should be in lower case", 400, 'INVALID_EMAIL');
-    }
-    existingUser.email = email
+  if(role && user.role === 'admin'){
+    // admin can promote others to admin ... 
+    existingUser.role = role 
   }
-
 
   if (password) {
-    if (password !== existingUser.password) {
-      if (password.length < 6) {
+    if (password.length < 6) {
         throw new CustomError(
           "Password should be minimum 6 characters",
           400,
           "INVALID_PASSWORD"
         );
       }
-
-      const hashedPass = await bcrypt.hash(password, 10);
-      existingUser.password = hashedPass
-    }
+    const hashedPass = await bcrypt.hash(password, 10);
+    existingUser.password = hashedPass
   }
+
 
   if(name && existingUser.name !== name) {
     existingUser.name = name 
@@ -89,6 +86,20 @@ const updateUser = async (id: string, payload: Record<string, string>) => {
     existingUser.phone = phone
   }
 
+  if (email && email !== existingUser.email) {
+    if (typeof email !== "string" || hasUpperCase(email)) {
+      throw new CustomError("Email should be in lower case", 400, 'INVALID_EMAIL');
+    }
+
+    const emailQuery = `SELECT * FROM users where email = ${email}`
+    const emailResult = await pool.query(emailQuery)
+  
+    if(emailResult.rowCount && emailResult.rowCount > 0){
+      throw new CustomError("Email should be unique", 400, 'INVALID_EMAIL');
+    } 
+    
+    existingUser.email = email
+  }
 
   const result = await pool.query(
   `UPDATE users 
