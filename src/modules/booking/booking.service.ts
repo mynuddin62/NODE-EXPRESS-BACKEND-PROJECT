@@ -171,8 +171,8 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
       id: row.id,
       customer_id: row.customer_id,
       vehicle_id: row.vehicle_id,
-      rent_start_date: row.rent_start_date,
-      rent_end_date: row.rent_end_date,
+      rent_start_date: toDateOnly(row.rent_start_date),
+      rent_end_date: toDateOnly(row.rent_end_date),
       total_price: row.total_price,
       status: row.status,
       customer: customerResponse,
@@ -216,11 +216,12 @@ const updateBookings  = async (id: string, payload: Record<string, string>, user
       throw new CustomError("No bookings found", 404, "NOT_FOUND")
   }else {
     
-    const start_date =  existingBooking[0]!.rent_start_date
-    const today = new Date().toISOString().split("T")[0] || "";
+    const startDate = new Date(existingBooking[0]!.rent_start_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0)
 
-    if(start_date >= today) {
-      throw new CustomError("Rent start date is not before start date", 400, "INVALID_RENT_START_DATE")
+    if (startDate <= today) {
+      throw new CustomError("Rent start date is not before today",400, "INVALID_RENT_START_DATE");
     }
 
   }
