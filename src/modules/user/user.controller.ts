@@ -44,18 +44,23 @@ const deleteUser = async (req: Request, res: Response) => {
   try {
     const result = await userServices.deleteUser(req.params.userId!);
 
-    if (!result || !result.rowCount) {
-      res.status(400).json({
-        success: false,
-        message: "User not found",
-        errors: "DELETE_FAIL"
-      });
-    } else {
-      res.status(200).json({
+    // if (!result || !result.rowCount) {
+    //   res.status(400).json({
+    //     success: false,
+    //     message: "User not found",
+    //     errors: "DELETE_FAIL"
+    //   });
+    // } else {
+    //   res.status(200).json({
+    //     success: true,
+    //     message: "User deleted successfully"
+    //   });
+    // }
+
+    res.status(200).json({
         success: true,
         message: "User deleted successfully"
       });
-    }
   } catch (err: any) {
     res.status(500).json({
       success: false,

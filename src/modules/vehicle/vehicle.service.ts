@@ -154,8 +154,7 @@ const deleteVehicle = async (id: string) => {
     limit 1`, [id])
   
   if(activeBookingByVehicleId.rowCount) {
-    new CustomError(`Active booking found for id : ${id}`, 400, 'invalid_vehicle_id');
-    return;
+    throw new CustomError(`Active booking found for id : ${id}`, 400, 'invalid_vehicle_id');
   }
 
   const result = await pool.query(`DELETE FROM vehicles WHERE id = $1`, [id]);

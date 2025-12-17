@@ -3,6 +3,9 @@ import CustomError from "../../error/customError";
 import { toDateOnly } from "../../utils/stringUtils";
 import { userServices } from "../user/user.service";
 import { vehicleServices } from "../vehicle/vehicle.service";
+import { BookingResponse } from "./bookingResponse";
+import { CustomerResponse } from "./CustomerResponse";
+import { VehicleResponse } from "./VehicleResponse";
 
 
 const createBooking = async (payload: Record<string, string>, user: any) => {
@@ -119,10 +122,12 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
    )`;
 
   const res = await pool.query(updateBookingAndVehicleSytemQuery);
-
+  console.log(res);
+  
 
   const id = user.role! === 'admin' ? 0 : user.id!
-  
+
+
   const result = await pool.query(`
     SELECT b.id, b.customer_id, b.vehicle_id,  
     b.rent_start_date, b.rent_end_date,
@@ -140,44 +145,48 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
       , 
       [id, id, bookingId, bookingId])
 
-  // need to handle for the list also ... *
-  if(result.rows[0]) {
-
-    const customerResponse = {
-      name : result.rows[0].name,
-      email : result.rows[0].email
-    }
-
-    const vehicleRespone : any = {
-      vehicle_name: result.rows[0].vehicle_name,
-      registration_number: result.rows[0].registration_number,
-  
-    }
-
-    if(id) {
-      vehicleRespone.type = result.rows[0].type
-    }
-
-    if(bookingId && id){
-      vehicleRespone.availability_status = result.rows[0].availability_status
-    }
-
-    const responseObj = {
-    id: result.rows[0].id,
-    customer_id: result.rows[0].customer_id,
-    vehicle_id: result.rows[0].vehicle_id,
-    rent_start_date: result.rows[0].rent_start_date,
-    rent_end_date: result.rows[0].rent_end_date,
-    total_price: result.rows[0].total_price,
-    status: result.rows[0].status,
-    customer: customerResponse,
-    vehicle: vehicleRespone
-  }
-
-  return responseObj;
-  }else {
+  if (!result.rows.length) {
     return null;
   }
+
+  const resList: BookingResponse[] = result.rows.map(row => {
+
+    const customerResponse: CustomerResponse = {
+      name: row.name,
+      email: row.email
+    };
+
+    const vehicleResponse: VehicleResponse = {
+      vehicle_name: row.vehicle_name,
+      registration_number: row.registration_number
+    };
+
+    if (id) {
+      vehicleResponse.type = row.type;
+    }
+
+    if (bookingId && id) {
+      vehicleResponse.availability_status = row.availability_status;
+    }
+
+    const responseObj: BookingResponse = {
+      id: row.id,
+      customer_id: row.customer_id,
+      vehicle_id: row.vehicle_id,
+      rent_start_date: row.rent_start_date,
+      rent_end_date: row.rent_end_date,
+      total_price: row.total_price,
+      status: row.status,
+      customer: customerResponse,
+      vehicle: vehicleResponse
+    };
+
+    return responseObj;
+  });
+
+return resList;
+
+
   
 };
 
@@ -205,26 +214,24 @@ const updateBookings  = async (id: string, payload: Record<string, string>, user
   
   const existingBooking = await getBookings(user, Number(id));
 
-  if (!existingBooking) {
-
-      new CustomError("No bookings found", 404, "NOT_FOUND")
-
+  if (!existingBooking || existingBooking.length !== 1) {
+      throw new CustomError("No bookings found", 404, "NOT_FOUND")
   }else {
     
-    const start_date =  existingBooking.rent_start_date
+    const start_date =  existingBooking[0]!.rent_start_date
     const today = new Date().toISOString().split("T")[0] || "";
 
     if(start_date >= today) {
-      new CustomError("Rent start date is not before start date", 400, "INVALID_RENT_START_DATE")
+      throw new CustomError("Rent start date is not before start date", 400, "INVALID_RENT_START_DATE")
     }
 
   }
 
 
   let vehicle_id = ''   
-  if(existingBooking) {
-    existingBooking.status = status
-    vehicle_id =  existingBooking.vehicle_id
+  if(existingBooking[0]) {
+    existingBooking[0].status = status
+    vehicle_id =  String(existingBooking[0]!.vehicle_id)
   }
 
   //now update the booking status ...

@@ -136,8 +136,7 @@ const deleteUser = async (id: string) => {
     limit 1`, [id])
   
   if(activeBookingByUserId.rowCount) {
-    new CustomError(`Active booking found for id : ${id}`, 400, 'invalid_user_id');
-    return;
+    throw new CustomError(`Active booking found for id : ${id}`, 400, 'invalid_user_id');
   }
 
   const result = await pool.query(`DELETE FROM users WHERE id = $1`, [id]);

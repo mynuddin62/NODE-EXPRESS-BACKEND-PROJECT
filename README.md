@@ -26,6 +26,6 @@ users
 }
 
 {
-  "email": "customer@company.com",
-  "password": "customer"
+  "email": "com@com.com",
+  "password": "kas2mr"
 }
