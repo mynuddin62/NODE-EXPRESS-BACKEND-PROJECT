@@ -109,17 +109,15 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
   
   const updateBookingAndVehicleSytemQuery = 
   `WITH updated_bookings AS (
-   UPDATE bookings
-   SET status = 'returned'
-   WHERE rent_end_date < CURRENT_DATE
-   RETURNING vehicle_id
-   )
-   UPDATE vehicles
-   SET availability_status = 'available'
-   WHERE id IN (
-   SELECT DISTINCT vehicle_id
-   FROM updated_bookings
-   )`;
+    UPDATE bookings
+    SET status = 'returned'
+    WHERE rent_end_date < CURRENT_DATE
+    RETURNING vehicle_id
+  )
+  UPDATE vehicles
+    SET availability_status = 'available'
+    WHERE id IN (SELECT DISTINCT vehicle_id FROM updated_bookings)
+  `;
 
   const res = await pool.query(updateBookingAndVehicleSytemQuery);
   console.log(res);
