@@ -4,10 +4,7 @@ A robust backend (REST API) for administering a vehicle rental system with secur
 
 ---
 
-## 🌐 Live URL
-
-> **API Base URL:**  
-> https://rental-system-backend.vercel.app
+[**API Base URL:**](https://rental-system-backend.vercel.app)
 
 
 
