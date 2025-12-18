@@ -29,3 +29,22 @@ users
   "email": "com@com.com",
   "password": "kas2mr"
 }
+
+
+
+const startDate = new Date(existingBooking[0]!.rent_start_date);
+    const today = new Date();
+
+    console.log(startDate,'startdate');
+    console.log(today, 'today');
+    
+    console.log(startDate >= today);
+    
+    
+    
+    today.setHours(0, 0, 0, 0)
+
+    if (startDate >= today) {
+
+      throw new CustomError("Rent start date is not before today",400, "INVALID_RENT_START_DATE");
+    }

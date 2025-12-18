@@ -16,9 +16,9 @@ app.use(express.json());
 initDB();
 
 // "/" -> localhost:5000/
-// app.get("/", logger, (req: Request, res: Response) => {
-//   res.send("Hello Next Level Developers!");
-// });
+app.get("/", logger, (req: Request, res: Response) => {
+  res.send("Hello Next Level Developers!");
+});
 
 //users CRUD
 app.use("/api/v1/users", userRoutes);
