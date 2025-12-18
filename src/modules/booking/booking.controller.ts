@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { bookingServices } from "./booking.service";
-import { BookingResponse } from "./bookingResponse";
 
 
 
@@ -26,7 +25,7 @@ const createBooking = async (req: Request, res: Response) => {
 const getBooking = async (req: Request, res: Response) => {
   try {
     const result  = await bookingServices.getBookings(req.user);
-    let data: BookingResponse[];
+    let data: Object[];
     let msg;
     if (!result) {
       data = []

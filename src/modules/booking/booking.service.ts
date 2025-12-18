@@ -3,9 +3,8 @@ import CustomError from "../../error/customError";
 import { toDateOnly } from "../../utils/stringUtils";
 import { userServices } from "../user/user.service";
 import { vehicleServices } from "../vehicle/vehicle.service";
-import { BookingResponse } from "./bookingResponse";
-import { CustomerResponse } from "./CustomerResponse";
-import { VehicleResponse } from "./VehicleResponse";
+
+
 
 
 const createBooking = async (payload: Record<string, string>, user: any) => {
@@ -121,7 +120,31 @@ const getBookings = async (user: any, bookingId: number = 0 ) => {
 
   const res = await pool.query(updateBookingAndVehicleSytemQuery);
   console.log(res);
-  
+
+  interface CustomerResponse {
+    name: string;
+    email: string;
+  }
+
+  interface VehicleResponse {
+    vehicle_name: string;
+    registration_number: string;
+    type?: string;
+    availability_status?: string;
+  }
+
+  interface BookingResponse {
+    id: number;
+    customer_id: number;
+    vehicle_id: number;
+    rent_start_date: string;
+    rent_end_date: string;
+    total_price: number;
+    status: string;
+    customer: CustomerResponse;
+    vehicle: VehicleResponse;
+  }
+
 
   const id = user.role! === 'admin' ? 0 : user.id!
 
